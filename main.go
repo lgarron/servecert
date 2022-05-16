@@ -7,7 +7,6 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -109,8 +108,8 @@ To local URL:
 	} else if localRootURL.Scheme == "https" {
 		tryServe := func() error {
 			return http.ListenAndServeTLS(localRootPortString(":443"),
-				fmt.Sprintf("/Users/lgarron/.data/servecert/certs/%s/%s.pem", localRootDomain, localRootDomain),
-				fmt.Sprintf("/Users/lgarron/.data/servecert/certs/%s/%s-key.pem", localRootDomain, localRootDomain),
+				dataDirDescendant(fmt.Sprintf("certs/%s/%s.pem", localRootDomain, localRootDomain)),
+				dataDirDescendant(fmt.Sprintf("certs/%s/%s-key.pem", localRootDomain, localRootDomain)),
 				nil)
 		}
 		err = tryServe()
@@ -119,16 +118,9 @@ To local URL:
 				panic(err)
 			}
 			fmt.Printf(`--------
-Could not find a certificate. Running:
-
-    ./script/cert %s
-
-`, localRootDomain)
-			cmd := exec.Command("./script/cert", localRootDomain)
-			err = cmd.Run()
-			if err != nil {
-				panic(err)
-			}
+Could not find a certificate. Running mkcert.
+`)
+			mkcert(localRootDomain)
 			err := tryServe()
 			if err != nil {
 				panic(err)

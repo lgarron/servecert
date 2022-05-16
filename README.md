@@ -6,9 +6,10 @@ Usage:
 
 ```shell
 git clone https://github.com/lgarron/servecert && cd servecert
+make build
 
 # Proxy to https://localhost/
-script/servecert https://example.com /
+build/servecert https://example.com /
 ```
 
 You could also also use any of the following as the second argument:
