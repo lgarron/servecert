@@ -2,14 +2,15 @@
 
 A small local HTTPS proxy using [`mkcert`](https://github.com/FiloSottile/mkcert) certificates. Please use with care.
 
-Usage:
+## Install
+
+Using Homebrew:
 
 ```shell
-git clone https://github.com/lgarron/servecert && cd servecert
-make build
+brew install --HEAD lgarron/lgarron/servecert
 
 # Proxy to https://localhost/
-build/servecert https://example.com /
+servecert https://example.com /
 ```
 
 You could also also use any of the following as the second argument:
@@ -23,3 +24,10 @@ You could also also use any of the following as the second argument:
 | `http://foo.test:8000/subpath/` | (serves HTTP without a cert on port 8000) |
 
 When you proxy a new domain using HTTPS for the first time, this invokes `mkcert` to install a root certificate and generates a certificate. [Learn more about `mkcert` certificate installation](https://github.com/FiloSottile/mkcert#installation).
+
+## Build from source
+
+```shell
+git clone https://github.com/lgarron/servecert && cd servecert
+make build
+```
