@@ -82,7 +82,8 @@ func main() {
 	}
 	http.HandleFunc(localRootURL.Path, rewriteHost(remoteRootURL, localRootURL.Path, proxy))
 
-	fmt.Printf(`Serving from remote URL:
+	servingInfo := func() {
+		fmt.Printf(`Serving from remote URL:
 
     %s
 
@@ -91,40 +92,43 @@ To local URL:
     %s
 
 `, remoteRootURL, localRootURL)
-	if localRootDomain != "localhost" {
+		if localRootDomain != "localhost" {
 
-		fmt.Printf(`Make sure the following domains is in /etc/hosts before connecting:
+			fmt.Printf(`Make sure the following domains is in /etc/hosts before connecting:
 
     %s
 
 `, localRootDomain)
+		}
 	}
 
 	if localRootURL.Scheme == "http" {
+		servingInfo()
 		err = http.ListenAndServe(localRootPortString(":80"), nil)
 		if err != nil {
 			panic(err)
 		}
 	} else if localRootURL.Scheme == "https" {
-		tryServe := func() error {
-			return http.ListenAndServeTLS(localRootPortString(":443"),
-				dataDirDescendant(fmt.Sprintf("certs/%s/%s.pem", localRootDomain, localRootDomain)),
-				dataDirDescendant(fmt.Sprintf("certs/%s/%s-key.pem", localRootDomain, localRootDomain)),
-				nil)
-		}
-		err = tryServe()
-		if err != nil {
-			if !strings.Contains(err.Error(), "no such file") {
-				panic(err)
-			}
+		certFile := dataDirDescendant(fmt.Sprintf("certs/%s/%s.pem", localRootDomain, localRootDomain))
+		certKeyFile := dataDirDescendant(fmt.Sprintf("certs/%s/%s-key.pem", localRootDomain, localRootDomain))
+
+		if !pathExists(certFile) || !pathExists(certKeyFile) {
 			fmt.Printf(`--------
-Could not find a certificate. Running mkcert.
-`)
+Could not find a certificate. Running mkcert for domain: %s
+
+`, localRootDomain)
 			mkcert(localRootDomain)
-			err := tryServe()
-			if err != nil {
-				panic(err)
-			}
+			fmt.Println("--------")
+		}
+
+		servingInfo()
+
+		err = http.ListenAndServeTLS(localRootPortString(":443"),
+			dataDirDescendant(fmt.Sprintf("certs/%s/%s.pem", localRootDomain, localRootDomain)),
+			dataDirDescendant(fmt.Sprintf("certs/%s/%s-key.pem", localRootDomain, localRootDomain)),
+			nil)
+		if err != nil {
+			panic(err)
 		}
 	} else {
 		panic(fmt.Sprintf("Unexpected scheme: %s", localRootURL.Scheme))

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"path"
@@ -17,6 +18,13 @@ func dataDir() string {
 
 func dataDirDescendant(ancestorPath string) string {
 	return path.Join(dataDir(), ancestorPath)
+}
+
+func pathExists(fullPath string) bool {
+	if _, err := os.Stat(fullPath); errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	return true
 }
 
 func mkcert(domain string) {
