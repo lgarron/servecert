@@ -84,6 +84,30 @@ func main() {
 		return defaultPortString
 	}
 
+	printedLocationError := false
+	proxy.ModifyResponse = func(r *http.Response) error {
+		location, err := r.Location()
+		if err == http.ErrNoLocation {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if urlOrigin(location) == urlOrigin(remoteRootURL) {
+			if localRootPath != remoteRootURL.Path {
+				if !printedLocationError {
+					fmt.Fprint(os.Stderr, "Received at least one `Location` response but the remote and local URL paths do not match. The `Location` header will not be rewritten in this case. (This message will not be logged for subsequent responses.)")
+					printedLocationError = true
+				}
+				return nil
+			}
+			location.Scheme = localRootURL.Scheme
+			location.Host = localRootURL.Host
+			r.Header.Set("Location", location.String())
+		}
+		return nil
+	}
+
 	if len(localRootPath) == 0 {
 		localRootURL.Path = "/"
 	}
