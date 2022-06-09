@@ -11,10 +11,17 @@ import (
 	"strings"
 )
 
+func urlOrigin(u *url.URL) string {
+	return fmt.Sprintf("%s://%s", u.Scheme, u.Host)
+}
+
 func rewriteHost(root *url.URL, basePath string, p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// From https://gist.github.com/JalfResi/6287706
 		r.Host = root.Host
+		if r.Header.Get("Origin") != "" {
+			r.Header.Set("Origin", urlOrigin(root))
+		}
 		relPath, err := filepath.Rel(basePath, r.URL.Path)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
