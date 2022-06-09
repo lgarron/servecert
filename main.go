@@ -58,6 +58,10 @@ func main() {
 	remoteRoot := flag.Arg(0)
 	localRoot := flag.Arg(1)
 
+	if !strings.Contains(remoteRoot, "://") {
+		fmt.Fprintf(os.Stderr, "ERROR: The remote URL does not contain a scheme, and servecert will not guess one.\nPlease specify a full remote URL (including the scheme).\n\nFor example:  https://example.com\n Instead of:  example.com\n\n--------\n\n")
+		printUsageAndExit()
+	}
 	remoteRootURL, err := url.Parse(remoteRoot)
 	if err != nil {
 		panic(err)
