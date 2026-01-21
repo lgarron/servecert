@@ -13,7 +13,7 @@ func dataDir() string {
 	if err != nil {
 		panic(err)
 	}
-	return path.Join(homeDir, ".data/servecert")
+	return path.Join(homeDir, ".local/share/servecert")
 }
 
 func dataDirDescendant(ancestorPath string) string {
